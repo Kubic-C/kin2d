@@ -5,7 +5,7 @@ namespace kin {
         // tooken from box2d: https://github.com/erincatto/box2d, which is licensed under MIT
 
         glm::vec2 d1, d2;
-        d1 = aabb1.bl - aabb2.tr;
+        d1 = aabb2.bl - aabb1.tr;
         d2 = aabb1.bl - aabb2.tr;
 
         if (d1.x > 0.0f || d1.y > 0.0f)

@@ -17,6 +17,5 @@ int main() {
     world.update(0.016f);
     world.update(0.016f);
     
-
     return 0;
 }
