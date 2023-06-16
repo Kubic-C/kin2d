@@ -8,6 +8,8 @@ namespace kin {
         transform_t();
         transform_t(glm::vec2 pos, float rot);
 
+        glm::vec2 get_world_point(glm::vec2 point);
+
         glm::vec2 pos;
         float     rot;
     };

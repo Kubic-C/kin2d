@@ -7,6 +7,10 @@ namespace kin {
     transform_t::transform_t(glm::vec2 pos, float rot) 
         : pos(pos), rot(rot) {}
 
+    glm::vec2 transform_t::get_world_point(glm::vec2 point) {
+        return glm::rotate(point, rot) + pos;
+    }
+
     obb_t::obb_t(glm::vec2 pos, float rot, float hw, float hh)
         : transform_t(pos, rot) {
         set_dimensions(hw, hh);

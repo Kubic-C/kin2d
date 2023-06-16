@@ -10,10 +10,10 @@ namespace kin {
         ~world_t();
 
         // create a rigid body
-        rigid_body_t& create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density);
+        rigid_body_t* create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density);
 
         // destroy a rigid body
-        void destroy_rigid_body(rigid_body_t& body);
+        void destroy_rigid_body(rigid_body_t* body);
 
         // set the dimensions of a quad tree  
         void set_tree_dimensions(glm::vec2 pos, float hw);

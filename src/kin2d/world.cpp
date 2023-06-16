@@ -19,20 +19,20 @@ namespace kin {
         }
     }
 
-    rigid_body_t& world_t::create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density) {
+    rigid_body_t* world_t::create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density) {
         rigid_body_t* new_body = body_pool.create(1, pos, half_size.x, half_size.y, density);
 
         new_body->set_density(density);
 
         add_to_list(new_body);
 
-        return *new_body;
+        return new_body;
     }
 
-    void world_t::destroy_rigid_body(rigid_body_t& body) {
-        remove_from_list(&body);
+    void world_t::destroy_rigid_body(rigid_body_t* body) {
+        remove_from_list(body);
 
-        body_pool.destruct(&body, 1);
+        body_pool.destruct(body, 1);
     }
 
     void world_t::set_tree_dimensions(glm::vec2 pos, float hw) {
