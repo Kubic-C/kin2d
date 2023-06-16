@@ -11,6 +11,8 @@ namespace kin {
 
         void update(float delta_time);
 
+        glm::vec2 get_world_point(glm::vec2 point);
+
         void set_density(float new_density);
         void apply_force(glm::vec2 force);
         void apply_force_at_point(glm::vec2 force, glm::vec2 point);
