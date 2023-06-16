@@ -20,7 +20,7 @@ namespace kin {
     }
 
     rigid_body_t* world_t::create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density) {
-        rigid_body_t* new_body = body_pool.create(1, pos, half_size.x, half_size.y, density);
+        rigid_body_t* new_body = body_pool.create(1, pos, 0.0f, half_size.x, half_size.y);
 
         new_body->set_density(density);
 
@@ -59,26 +59,28 @@ namespace kin {
     void world_t::update(float delta_time) {
         tree_prepare(root, root_pos, root_hw);
 
+        iterate_bodies([&](kin::rigid_body_t* body){
+            body->linear_vel += gravity;
+
+            body->update(delta_time);
+
+            tree_insert(root, *body);
+        });
+
+        iterate_bodies([&](kin::rigid_body_t* body){
+            tree_search_w_callback(root, *body, solve_collisions_in_leaf);
+
+            body->traversed = true;
+        });
+    }
+
+    void world_t::iterate_bodies(body_callback_t callback) {
         rigid_body_t* cur = first;
         while(cur != nullptr) {
-            cur->linear_vel += gravity;
-
-            cur->update(delta_time);
-            tree_insert(root, *cur);
+            callback(cur);
 
             cur = cur->next;
         }
-
-        cur = first;
-        while(cur != nullptr) {
-            tree_search_w_callback(root, *cur, solve_collisions_in_leaf);
-
-            cur->traversed = true;
-
-            cur = cur->next;
-        }
-
-        node_clear(root, root);
     }
 
     void world_t::add_to_list(rigid_body_t* body) {

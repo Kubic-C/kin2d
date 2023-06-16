@@ -2,7 +2,7 @@
 
 namespace kin {
     transform_t::transform_t()
-        : pos(0.0f), rot(rot) {}
+        : pos(0.0f), rot(0.0f) {}
 
     transform_t::transform_t(glm::vec2 pos, float rot) 
         : pos(pos), rot(rot) {}
@@ -33,6 +33,9 @@ namespace kin {
         for(uint8_t i = 0; i < 2; i++) {
             normals[i] = glm::rotate(local_normals[i], rot);
         }
+
+        aabb.bl = {float_max, float_max};
+        aabb.tr = {float_min, float_min};
 
         for(int i = 0; i < 4; i++) {
             world_vertices[i] = glm::rotate(local_vertices[i], rot);

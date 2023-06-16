@@ -5,7 +5,7 @@ int main() {
 
     kin::world_t world;
 
-    auto& body = world.create_rigid_body({0.0f, 0.0f}, {10.0f, 10.0f}, 1.0f);
+    auto body = world.create_rigid_body({0.0f, 0.0f}, {10.0f, 10.0f}, 1.0f);
     world.create_rigid_body({0.0f, 0.0f}, {10.0f, 10.0f}, 1.0f);
     world.create_rigid_body({0.0f, 0.0f}, {10.0f, 10.0f}, 1.0f);
     world.create_rigid_body({0.0f, 0.0f}, {10.0f, 10.0f}, 1.0f);

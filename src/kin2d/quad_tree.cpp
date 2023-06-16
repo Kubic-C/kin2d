@@ -4,9 +4,9 @@
 namespace kin {
     std::array<aabb_t, 4> get_quad_aabbs(const aabb_t& parent, float hw) {
         return {
-            aabb_t(parent.bl, parent.bl + hw),
+            aabb_t(parent.bl, (parent.bl + hw)),
             aabb_t(glm::vec2(parent.bl.x + hw, parent.bl.y), glm::vec2(parent.tr.x, parent.tr.y - hw)),
-            aabb_t(parent.bl + hw, parent.tr),
+            aabb_t(parent.tr - hw, parent.tr),
             aabb_t(glm::vec2(parent.bl.x, parent.bl.y + hw), glm::vec2(parent.tr.x - hw, parent.tr.y))
         };
     }
@@ -122,7 +122,9 @@ namespace kin {
     }
 
     void tree_prepare(quad_tree_t& root, glm::vec2 pos, float hw) {
-        assert(root.leaf == nullptr);
+        if(root.children || root.leaf) {
+            node_clear(root, root);
+        }
 
         root.leaf = root.leaf_pool.create(1, root.element_pool);
         root.aabb.bl = pos - glm::vec2(hw, hw);
