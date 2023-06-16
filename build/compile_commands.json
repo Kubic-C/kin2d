@@ -1,0 +1,68 @@
+[
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/deps/portem/src -g -o deps\\portem\\src\\ptm\\CMakeFiles\\portem.dir\\allocator.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\src\\ptm\\allocator.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\src\\ptm\\allocator.cpp",
+  "output": "deps\\portem\\src\\ptm\\CMakeFiles\\portem.dir\\allocator.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/deps/portem/src -g -o deps\\portem\\src\\ptm\\CMakeFiles\\portem.dir\\memory_pool.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\src\\ptm\\memory_pool.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\src\\ptm\\memory_pool.cpp",
+  "output": "deps\\portem\\src\\ptm\\CMakeFiles\\portem.dir\\memory_pool.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/deps/portem/src -g -o deps\\portem\\test\\CMakeFiles\\portem_test.dir\\main.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\test\\main.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\deps\\portem\\test\\main.cpp",
+  "output": "deps\\portem\\test\\CMakeFiles\\portem_test.dir\\main.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\base.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\base.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\base.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\base.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\aabb.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\aabb.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\aabb.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\aabb.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\obb.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\obb.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\obb.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\obb.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\quad_tree.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\quad_tree.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\quad_tree.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\quad_tree.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\body.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\body.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\body.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\body.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\world.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\world.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\world.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\world.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\kin2d\\CMakeFiles\\kin2d.dir\\collision.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\collision.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\kin2d\\collision.cpp",
+  "output": "src\\kin2d\\CMakeFiles\\kin2d.dir\\collision.cpp.obj"
+},
+{
+  "directory": "C:/Users/sawye/Dev/kin2d/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -IC:/Users/sawye/Dev/kin2d/src -IC:/Users/sawye/Dev/kin2d/deps/portem/src -IC:/Users/sawye/Dev/kin2d/deps/glm -g -o src\\test\\CMakeFiles\\kin2d_test.dir\\main.cpp.obj -c C:\\Users\\sawye\\Dev\\kin2d\\src\\test\\main.cpp",
+  "file": "C:\\Users\\sawye\\Dev\\kin2d\\src\\test\\main.cpp",
+  "output": "src\\test\\CMakeFiles\\kin2d_test.dir\\main.cpp.obj"
+}
+]

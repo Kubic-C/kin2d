@@ -1,0 +1,281 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						8
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "deps",
+					"childIndexes" : 
+					[
+						2,
+						6
+					],
+					"jsonFile" : "directory-deps-Debug-daa91dd17ee23792cad4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "deps"
+				},
+				{
+					"build" : "deps/portem",
+					"childIndexes" : 
+					[
+						3,
+						5
+					],
+					"jsonFile" : "directory-deps.portem-Debug-c5ccc52634b4dab63448.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "deps/portem"
+				},
+				{
+					"build" : "deps/portem/src",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-deps.portem.src-Debug-793f60000768482ead87.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "deps/portem/src"
+				},
+				{
+					"build" : "deps/portem/src/ptm",
+					"jsonFile" : "directory-deps.portem.src.ptm-Debug-e10a431a5eae6876a07d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 1,
+					"source" : "deps/portem/src/ptm",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "deps/portem/test",
+					"jsonFile" : "directory-deps.portem.test-Debug-cd187f4e59c0cbefa7eb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "deps/portem/test",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "deps/glm",
+					"childIndexes" : 
+					[
+						7
+					],
+					"jsonFile" : "directory-deps.glm-Debug-89a945cb137bb741e035.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "deps/glm",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "deps/glm/glm",
+					"jsonFile" : "directory-deps.glm.glm-Debug-c7a4f9d444c41aa3dc7a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 6,
+					"projectIndex" : 2,
+					"source" : "deps/glm/glm"
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						9,
+						10
+					],
+					"jsonFile" : "directory-src-Debug-c94b7c2814d5a21df52c.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src"
+				},
+				{
+					"build" : "src/kin2d",
+					"jsonFile" : "directory-src.kin2d-Debug-4644b4b21fd601fe79f2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 8,
+					"projectIndex" : 0,
+					"source" : "src/kin2d",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/test",
+					"jsonFile" : "directory-src.test-Debug-f24e00b7602ac2d4a339.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 8,
+					"projectIndex" : 0,
+					"source" : "src/test",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						8,
+						9,
+						10
+					],
+					"name" : "kin2d",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5
+					],
+					"name" : "PORTEM",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2,
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6,
+						7
+					],
+					"name" : "glm",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 9,
+					"id" : "kin2d::@87557f1600960832b51b",
+					"jsonFile" : "target-kin2d-Debug-71a79a1418eab66e1ae9.json",
+					"name" : "kin2d",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 10,
+					"id" : "kin2d_test::@b7fcbc08bf8df37e9c1b",
+					"jsonFile" : "target-kin2d_test-Debug-1dfae2cd9f4d9ae638e0.json",
+					"name" : "kin2d_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "portem::@2156485c3e9bd6809f40",
+					"jsonFile" : "target-portem-Debug-e5fc08af930614f881d2.json",
+					"name" : "portem",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "portem_test::@e81e686f1417acc136aa",
+					"jsonFile" : "target-portem_test-Debug-5d4e38aeb2373c367967.json",
+					"name" : "portem_test",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "uninstall::@7cf90b6bd89a7cda6e9f",
+					"jsonFile" : "target-uninstall-Debug-207a6c85988772160799.json",
+					"name" : "uninstall",
+					"projectIndex" : 2
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/sawye/Dev/kin2d/build",
+		"source" : "C:/Users/sawye/Dev/kin2d"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 5
+	}
+}

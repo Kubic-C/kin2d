@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*.txt": "cmake",
+        "array": "cpp",
+        "limits": "cpp",
+        "string_view": "cpp",
+        "iterator": "cpp"
+    }
+}
