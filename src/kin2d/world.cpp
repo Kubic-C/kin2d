@@ -9,28 +9,41 @@ namespace kin {
         : gravity(gravity) {}
 
     world_t::~world_t() {
-        rigid_body_t* cur = first;
+        rigid_body_t* cur = dynamic_cast<rigid_body_t*>(bodies.first);
         while(cur != nullptr) {
-            rigid_body_t* next = cur->next;
+            rigid_body_t* next = dynamic_cast<rigid_body_t*>(cur->next);
 
             body_pool.destruct(cur, 1);
 
             cur = next;
         }
+
+        if(root.leaf || root.children) {
+            node_clear(root, root);
+        }
     }
 
-    rigid_body_t* world_t::create_rigid_body(glm::vec2 pos, glm::vec2 half_size, float density) {
-        rigid_body_t* new_body = body_pool.create(1, pos, 0.0f, half_size.x, half_size.y);
+    void world_t::verify_unique_bodies() {
+        iterate_bodies([&](kin::rigid_body_t* body1){
+            iterate_bodies([&](kin::rigid_body_t* body2){
+                if(body1 == body2)
+                    return;
+                
+                assert(body1->body_num != body2->body_num);
+            });
+        });
+    }
 
-        new_body->set_density(density);
+    rigid_body_t* world_t::create_rigid_body(glm::vec2 pos, float rot, body_type_t type) {
+        rigid_body_t* new_body = body_pool.create(1, this, pos, rot, type);
 
-        add_to_list(new_body);
+        bodies.push_back(new_body);
 
         return new_body;
     }
 
     void world_t::destroy_rigid_body(rigid_body_t* body) {
-        remove_from_list(body);
+        bodies.remove_element(body);
 
         body_pool.destruct(body, 1);
     }
@@ -38,77 +51,69 @@ namespace kin {
     void world_t::set_tree_dimensions(glm::vec2 pos, float hw) {
         root_pos = pos;
         root_hw = hw;
+
+        tree_prepare(root, pos, hw);
     }
 
-    void solve_collisions_in_leaf(quad_tree_element_t& element, const leaf_list_t& bodies) {
-        for(auto body : bodies) {
-            if(body->traversed || &element == body) {
+    void solve_collisions_in_leaf(quad_tree_element_t* element, const aabb_t& leaf_aabb, leaf_list_t& fixtures) {
+        fixture_t* fixture1 = (fixture_t*)element;
+        
+        for(auto fixture : fixtures) {
+            fixture_t* fixture2 = (fixture_t*)fixture;
+
+            if(fixture2->traversed || fixture1->body == fixture2->body) {
                 continue;
             }
 
-            rigid_body_t& body1 = *(rigid_body_t*)&element;
-            rigid_body_t& body2 = *(rigid_body_t*)body;
-
             collision_manifold_t manifold;
-            if(solve_collision_if_there(body1, body2, manifold)) {
-                impulse_method(body1, body2, manifold);
+            if(solve_collision_if_there(*fixture1, *fixture2, manifold)) {
+                impulse_method(*fixture1->body, *fixture2->body, manifold);
             }
         }
     }
 
-    void world_t::update(float delta_time) {
-        tree_prepare(root, root_pos, root_hw);
+    void world_t::update(float delta_time, uint32_t iterations) {
+        float step = delta_time / (float)iterations;
 
-        iterate_bodies([&](kin::rigid_body_t* body){
-            body->linear_vel += gravity;
+        for(uint32_t i = 0; i < iterations; i++) {
+            verify_unique_bodies();
 
-            body->update(delta_time);
+            tree_clear_children(root); // clearing children from tree every update
 
-            tree_insert(root, *body);
-        });
+            iterate_bodies([&](kin::rigid_body_t* body){
+                if(!body->has_fixtures())
+                    return;
 
-        iterate_bodies([&](kin::rigid_body_t* body){
-            tree_search_w_callback(root, *body, solve_collisions_in_leaf);
+                body->apply_linear_velocity(gravity * step);
+                body->update(step);
 
-            body->traversed = true;
-        });
+                body->iterate_fixtures([&](fixture_t* fixture){
+                    fixture->traversed = false;
+                    fixture->update_vertices();
+                    tree_insert(root, fixture);
+                });
+            });
+
+            // Im using a method to iterate elements found here:
+            // https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
+            tree_iterate_leaves(root, [&](const leaf_list_t& list){
+                for(quad_tree_element_t* element : list) {
+                    if(!element->traversed) {
+                        tree_search_w_callback(root, element, solve_collisions_in_leaf);
+
+                        element->traversed = true;
+                    }
+                }
+            });
+        }
     }
 
     void world_t::iterate_bodies(body_callback_t callback) {
-        rigid_body_t* cur = first;
+        rigid_body_t* cur = dynamic_cast<rigid_body_t*>(bodies.first);
         while(cur != nullptr) {
             callback(cur);
 
-            cur = cur->next;
+            cur = dynamic_cast<rigid_body_t*>(cur->next);
         }
-    }
-
-    void world_t::add_to_list(rigid_body_t* body) {
-        if(first == nullptr) {
-            first = body;
-            last = body;
-        } else {
-            rigid_body_t* old_end = last;
-            old_end->next = body;
-            body->prev = old_end;
-            last = body;
-        }
-    }
-
-    void world_t::remove_from_list(rigid_body_t* body) {
-        rigid_body_t* prev = body->prev;
-        rigid_body_t* next = body->next;
-
-        if(prev)
-            prev->next = next;
-
-        if(next)
-            next->prev = prev;
-
-        if(body == first) 
-            first = next;
-
-        if(body == last)
-            last = prev;
     }
 }

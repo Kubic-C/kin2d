@@ -40,19 +40,7 @@ namespace kin {
             } else {
                 float new_depth = std::max(0.0f, std::min(shape1.max, shape2.max) - std::max(shape1.min, shape2.min));
 
-                // checking for containment
-                if (contains(shape1, shape2) || contains(shape2, shape1)) {
-                    double mins = glm::abs(shape1.min - shape2.min);
-                    double maxs = glm::abs(shape1.max - shape2.max);
-
-                    if (mins < maxs) {
-                        depth += mins;
-                    } else {
-                        depth += maxs;
-                    }
-                }
-
-                if(new_depth < depth) {
+                if(new_depth <= depth) {
                     normal = normals[i];
                     depth  = new_depth;
 
@@ -76,7 +64,9 @@ namespace kin {
             return false;
         }
 
-        if(!nearly_equal(obb1.rot, obb2.rot)) {
+        // prevents testing the same axises again
+        // we can ONLY do this because we know both are boxes
+        if(!nearly_equal(obb1.get_world_rot(), obb2.get_world_rot())) {
             if(!sat_test_vertices(obb1.world_vertices, obb2.world_vertices, obb2.normals, manifold.normal, manifold.depth)) {
                 return false;
             }
@@ -96,9 +86,9 @@ namespace kin {
 
         float d = proj / length;
 
-        if(d <= 0) {
+        if(d <= 0.0f) {
             cp = v1;
-        } else if(d >= 1) {
+        } else if(d >= 1.0f) {
             cp = v2;
         } else {
             cp = v1 + v1_to_v2 * d;
@@ -107,28 +97,25 @@ namespace kin {
         return glm::distance(p, cp);
     }
 
-    void find_closest_points(glm::vec2& cp1, glm::vec2& cp2, float& distance1, 
+    void find_closest_points(glm::vec2& cp1, glm::vec2& cp2, uint32_t& count, float& distance1, 
         const box_vertices_t& points1, const box_vertices_t& points2) {
         for(uint32_t i = 0; i < points1.size(); i++) {
-            const glm::vec2& p = points1[i];
+            glm::vec2 p = points1[i];
 
-            glm::vec2 prev = points2.back();
             for(uint32_t j = 0; j < points2.size(); j++) {
-                if(j != 0) {
-                    prev = points2[j - 1];
-                }
-
-                glm::vec2 cur = points2[j];
+                glm::vec2 prev = points2[j == 0 ? points2.size() - 1 : j - 1];
+                glm::vec2 cur  = points2[j];
             
                 glm::vec2 cp;
                 float distance = point_segment_distance(p, prev, cur, cp);
 
-                if(nearly_equal(distance, distance1)) {
-                    if(nearly_equal(cp, cp1, 0.1f))
-                        continue;
-
-                    cp2 = cp;
-                } else if(distance < distance1) {
+                if(nearly_equal(distance, distance1, 0.1f)) {
+                    if(!nearly_equal(cp, cp1, 0.005f)) {
+                        count = 2;
+                        cp2 = cp;
+                    }
+                } else if(distance <= distance1) {
+                    count = 1;
                     cp1 = cp;
                     distance1 = distance;
                 }
@@ -138,79 +125,153 @@ namespace kin {
 
     void compute_manifold(obb_t& obb1, obb_t& obb2, collision_manifold_t& manifold) {
         float min_distance = std::numeric_limits<float>::max();
+        uint32_t count = 0;
         glm::vec2 min_cp;
-        glm::vec2 min_cp2 = {std::numeric_limits<float>::max(), 0.0f};
+        glm::vec2 min_cp2;
 
-        find_closest_points(min_cp, min_cp2, min_distance, obb1.world_vertices, obb2.world_vertices);
-        find_closest_points(min_cp, min_cp2, min_distance, obb2.world_vertices, obb1.world_vertices);
+        find_closest_points(min_cp, min_cp2, count, min_distance, obb1.world_vertices, obb2.world_vertices);
+        find_closest_points(min_cp, min_cp2, count, min_distance, obb2.world_vertices, obb1.world_vertices);
+
+        assert(count != 0);
 
         manifold.add(min_cp);
-        if(min_cp2.x != std::numeric_limits<float>::max()) {
+        if(count == 2) {
             manifold.add(min_cp2);
         }
     }
 
-    bool solve_collision_if_there(rigid_body_t& body1, rigid_body_t& body2, collision_manifold_t& manifold) {
-        if(!aabb_collide(body1.aabb, body2.aabb))
+    bool solve_collision_if_there(fixture_t& fix1, fixture_t& fix2, collision_manifold_t& manifold) {
+        rigid_body_t& body1 = *fix1.body;
+        rigid_body_t& body2 = *fix2.body;
+
+        if(!aabb_collide(fix1.aabb, fix2.aabb))
             return false;
         
-        if(!sat_test(body1, body2, manifold))
+        if(!sat_test(fix1, fix2, manifold))
             return false;
 
         const glm::vec2 amount = manifold.normal * manifold.depth;
-        const float inv_total_mass = 1.0f / (body1.mass + body2.mass); 
-        const glm::vec2 amount1 = amount * (body2.mass * inv_total_mass);
-        const glm::vec2 amount2 = amount * (body1.mass * inv_total_mass);
+        const float invtotal_mass = 1.0f / (body1.mass + body2.mass); 
+        const glm::vec2 amount1 = amount * (body1.mass * invtotal_mass);
+        const glm::vec2 amount2 = amount * (body2.mass * invtotal_mass);
 
         body1.pos -= amount1;
         body2.pos += amount2;   
 
-        for(auto& point : body1.world_vertices) {
+        for(auto& point : fix1.world_vertices) {
             point -= amount1;
         }
 
-        for(auto& point : body2.world_vertices) {
+        for(auto& point : fix2.world_vertices) {
             point += amount2;
         }
 
-        compute_manifold(body1, body2, manifold);
+        compute_manifold(fix1, fix2, manifold);
+
+        manifold.restitution = glm::max(fix1.restitution, fix2.restitution);
+        manifold.static_friction = (fix1.static_friction + fix2.static_friction) * 0.5f;
+        manifold.dynamic_friction = (fix1.dynamic_friction + fix2.dynamic_friction) * 0.5f;
 
         return true;
     }
+    
+    struct impulse_t {
+        glm::vec2 r1;
+        glm::vec2 r2;
+        float j = 0.0f;
+        glm::vec2 friction_impulse = {0.0f, 0.0f};
+    };
 
     void impulse_method(rigid_body_t& body1, rigid_body_t& body2, collision_manifold_t& manifold) {
-        glm::vec2 vrel = body1.linear_vel - body2.linear_vel;
-        float restitution = glm::max(body1.restitution, body2.restitution);
+        std::array<impulse_t, 2> impulses;
+        
+        for(uint32_t i = 0; i < manifold.count; i++) {
+            impulses[i].r1 = body1.pos - manifold.points[i];
+            impulses[i].r2 = body2.pos - manifold.points[i];
 
-        float impulse_velocity = -(1.0f + restitution) * glm::dot(vrel, manifold.normal);
-        float angular_vel1 = 0.0f;
-        float angular_vel2 = 0.0f;
-        float angular_change = 0.0f;
+            glm::vec2 r1_perp = {impulses[i].r1.y, -impulses[i].r1.x};
+            glm::vec2 r2_perp = {impulses[i].r2.y, -impulses[i].r2.x};
 
-        { // this all has to do with angular change lol
-            for(uint8_t i = 0; i < manifold.count; i++) {
-                glm::vec2 relcp1 = body1.pos - manifold.points[i];
-                glm::vec2 relcp2 = body2.pos - manifold.points[i];
-                
-                float crosscp1 = body1.invtensor * cross(relcp1, manifold.normal);
-                float crosscp2 = body2.invtensor * cross(relcp2, manifold.normal);
-                angular_change += glm::dot(
-                                (crosscp1 * relcp1) + 
-                                (crosscp2 * relcp2), manifold.normal);
+            glm::vec2 angular_linear1 = r1_perp * body1.angular_vel;
+            glm::vec2 angular_linear2 = r2_perp * body2.angular_vel;
 
-                angular_vel1 += crosscp1;
-                angular_vel2 += crosscp2;
+            glm::vec2 rel_vel = 
+                (body2.linear_vel + angular_linear2) - (body1.linear_vel + angular_linear1);
+
+            float rel_vel_dot_n = glm::dot(rel_vel, manifold.normal);
+            if(rel_vel_dot_n > 0.0f)
+                continue;
+
+            float r1_perp_dot_n = glm::dot(r1_perp, manifold.normal);
+            float r2_perp_dot_n = glm::dot(r2_perp, manifold.normal);
+
+            float denom = 
+                body1.invmass + body2.invmass + 
+                (sqaure(r1_perp_dot_n) * body1.invintertia) + 
+                (sqaure(r2_perp_dot_n) * body2.invintertia);
+
+            impulses[i].j = -(1 + manifold.restitution) * rel_vel_dot_n;
+            impulses[i].j /= denom;
+            impulses[i].j /= manifold.count;
+        }
+
+        for(uint32_t i = 0; i < manifold.count; i++) {
+            glm::vec2 impulse = impulses[i].j * manifold.normal;
+
+            // if(impulses[i].j >= 300.0f) {
+            //     printf("impulse[i].j: %f\n", impulses[i].j);
+            // }
+
+            body1.linear_vel -= impulse * body1.invmass;
+            body1.angular_vel -= cross(impulse, impulses[i].r1) * body1.invintertia;
+
+            body2.linear_vel += impulse * body2.invmass;
+            body2.angular_vel += cross(impulse, impulses[i].r2) * body2.invintertia;
+        }
+
+        // friction calculations
+
+        for(uint32_t i = 0; i < manifold.count; i++) {
+            glm::vec2 r1_perp = {impulses[i].r1.y, -impulses[i].r1.x};
+            glm::vec2 r2_perp = {impulses[i].r2.y, -impulses[i].r2.x};
+
+            glm::vec2 angular_linear1 = r1_perp * body1.angular_vel;
+            glm::vec2 angular_linear2 = r2_perp * body2.angular_vel;
+
+            glm::vec2 rel_vel = 
+                (body2.linear_vel + angular_linear2) - (body1.linear_vel + angular_linear1);
+
+            glm::vec2 tangent = rel_vel - glm::dot(rel_vel, manifold.normal) * manifold.normal;
+            if(nearly_equal(tangent, {0.0f, 0.0f}))
+                continue;
+            else
+                tangent = glm::normalize(tangent);
+
+            float r1_perp_dot_t = glm::dot(r1_perp, tangent);
+            float r2_perp_dot_t = glm::dot(r2_perp, tangent);
+
+            float denom = 
+                body1.invmass + body2.invmass + 
+               (sqaure(r1_perp_dot_t) * body1.invintertia) + 
+               (sqaure(r2_perp_dot_t) * body2.invintertia);
+
+            float jt = -glm::dot(rel_vel, tangent);
+            jt /= denom;
+            jt /= manifold.count;
+
+            if(glm::abs(jt) <= impulses[i].j * manifold.static_friction) {
+                impulses[i].friction_impulse = jt * tangent;
+            } else {
+                impulses[i].friction_impulse = -impulses[i].j * tangent * manifold.dynamic_friction;
             }
         }
 
-        float lower_div = body1.invmass + body2.invmass + glm::abs(angular_change); 
-        
-        impulse_velocity /= lower_div; 
+        for(uint32_t i = 0; i < manifold.count; i++) {
+            body1.linear_vel -= impulses[i].friction_impulse * body1.invmass;
+            body1.angular_vel -= cross(impulses[i].friction_impulse, impulses[i].r1) * body1.invintertia;
 
-        body1.angular_vel += angular_vel1;
-        body2.angular_vel -= angular_vel2;
-
-        body1.linear_vel += body1.invmass * impulse_velocity * manifold.normal;
-        body2.linear_vel -= body2.invmass * impulse_velocity * manifold.normal;
+            body2.linear_vel += impulses[i].friction_impulse * body2.invmass;
+            body2.angular_vel += cross(impulses[i].friction_impulse, impulses[i].r2) * body2.invintertia;
+        }
     }
 }

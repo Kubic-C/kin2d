@@ -53,11 +53,11 @@ namespace kin {
             }
     }
 
-    void node_insert(quad_tree_t& root, quad_tree_node_t& node, quad_tree_element_t& element, const aabb_t& aabb, float hw, uint32_t depth) {
+    void node_insert(quad_tree_t& root, quad_tree_node_t& node, quad_tree_element_t* element, const aabb_t& aabb, float hw, uint32_t depth) {
         float hhw = hw * 0.5f;
         std::array<aabb_t, 4> node_aabb = get_quad_aabbs(aabb, hw);
 
-        if(!node.children) {
+        if(node.leaf) {
             // the node is a leaf
             if(depth + 1 < settings.max_tree_depth && 
                node.leaf->objects.size() + 1 >= settings.max_elements_in_leaf) {
@@ -74,14 +74,14 @@ namespace kin {
                     node.children[i].leaf   = root.leaf_pool.create(1, root.element_pool);
                     root_leaf_list_add(root, node.children[i].leaf);
 
-                    if(aabb_collide(node_aabb[i], element.get_aabb())) {
+                    if(aabb_collide(node_aabb[i], element->get_aabb())) {
                         node_insert(root, node.children[i], element, node_aabb[i], hhw, depth + 1);
                     }     
 
                     // also move our children
-                    for(auto& object : leaf->objects) {
+                    for(auto object : leaf->objects) {
                         if(aabb_collide(node_aabb[i], object->get_aabb())) {
-                            node_insert(root, node.children[i], *object, node_aabb[i], hhw, depth + 1);
+                            node_insert(root, node.children[i], object, node_aabb[i], hhw, depth + 1);
                         }   
                     }   
                 }
@@ -93,21 +93,44 @@ namespace kin {
                 // this leaf cant go deeper or does not have enough to turn into
                 // a inner node
 
-                node.leaf->objects.push_back(&element);
+                node.leaf->objects.push_back(element);
             }
         } else {
             // this is a node so just pass it to the children
 
             for(uint32_t i = 0; i < 4; i++) {
-                if(aabb_collide(node_aabb[i], element.get_aabb())) {
+                if(aabb_collide(node_aabb[i], element->get_aabb())) {
                     node_insert(root, node.children[i], element, node_aabb[i], hhw, depth + 1);
                 } 
             }
         }
     }
 
+    void tree_remove_element(quad_tree_t& root, aabb_t& old_aabb, quad_tree_element_t* element) {
+        tree_search_w_aabb_callback(root, old_aabb, [&](const aabb_t& old_aabb, const aabb_t& aabb, leaf_list_t& list){
+            for(uint32_t i = 0; i < list.size(); i++) {
+                if(list[i] == element) {
+                    list.erase(list.begin() + i);
+                    return;
+                }
+            }
+
+            assert(!"element was not in list that should contain it");
+        });
+    }
+
+    void node_clear_children(quad_tree_t& root, quad_tree_node_t& node) {
+        if(node.leaf) {
+            node.leaf->objects.clear();
+        } else {
+            for(uint32_t i = 0; i < 4; i++) {
+                node_clear_children(root, node.children[i]);
+            }
+        }
+    }
+
     void node_clear(quad_tree_t& root, quad_tree_node_t& node) {
-        if(node.children == nullptr) {
+        if(node.leaf) {
             root_leaf_list_remove(root, node.leaf);
             root.leaf_pool.destruct(node.leaf, 1);
             node.leaf = nullptr;
@@ -134,7 +157,12 @@ namespace kin {
         root_leaf_list_add(root, root.leaf);
     }
 
-    void tree_insert(quad_tree_t& root, quad_tree_element_t& element) {
+    void tree_clear_children(quad_tree_t& root) {
+        node_clear_children(root, root);
+    }
+
+    void tree_insert(quad_tree_t& root, quad_tree_element_t* element) {
+        element->insert_aabb = element->get_aabb();
         node_insert(root, root, element, root.aabb, root.hw, 0);
     }
 
@@ -145,29 +173,47 @@ namespace kin {
     void tree_iterate_leaves(quad_tree_t& root, leaf_callback callback) {
         quad_tree_leaf_t* cur = root.first;
         while(cur != nullptr) {
-            if(cur->objects.size() > 1)
-                callback(cur->objects);
+            callback(cur->objects);
 
             cur = cur->next;
         }
     }
 
-    void node_search_w_callback(quad_tree_node_t& node, const aabb_t& aabb, float hw, quad_tree_element_t& element, search_callback_t callback) {
-        float hhw = hw * 0.5f;
-        std::array<aabb_t, 4> node_aabb = get_quad_aabbs(aabb, hw);
-        
-        if(!node.children) {
-            callback(element, node.leaf->objects);
+    void node_search_w_aabb_callback(quad_tree_node_t& node, const aabb_t& node_aabb_, float hw, const aabb_t& old_aabb, aabb_search_callback_t callback) {
+        if(node.leaf) {
+            callback(old_aabb, node_aabb_, node.leaf->objects);
         } else {
+            float hhw = hw * 0.5f;
+            std::array<aabb_t, 4> node_aabb = get_quad_aabbs(node_aabb_, hw);
+            
             for(uint32_t i = 0; i < 4; i++) {
-                if(aabb_collide(node_aabb[i], element.get_aabb())) {
+                if(aabb_collide(node_aabb[i], old_aabb)) {
+                    node_search_w_aabb_callback(node.children[i], node_aabb[i], hhw, old_aabb, callback);
+                }
+            }
+        }
+    }
+
+    void node_search_w_callback(quad_tree_node_t& node, const aabb_t& aabb, float hw, quad_tree_element_t* element, search_callback_t callback) {
+        if(!node.children) {
+            callback(element, aabb, node.leaf->objects);
+        } else {
+            float hhw = hw * 0.5f;
+            std::array<aabb_t, 4> node_aabb = get_quad_aabbs(aabb, hw);
+            
+            for(uint32_t i = 0; i < 4; i++) {
+                if(aabb_collide(node_aabb[i], element->get_aabb())) {
                     node_search_w_callback(node.children[i], node_aabb[i], hhw, element, callback);
                 }
             }
         }
     }
 
-    void tree_search_w_callback(quad_tree_t& root, quad_tree_element_t& element, search_callback_t callback) {
+    void tree_search_w_aabb_callback(quad_tree_t& root, const aabb_t& aabb, aabb_search_callback_t callback) {
+        node_search_w_aabb_callback(root, root.aabb, root.hw, aabb, callback);
+    }
+
+    void tree_search_w_callback(quad_tree_t& root, quad_tree_element_t* element, search_callback_t callback) {
         node_search_w_callback(root, root.aabb, root.hw, element, callback);
     }
 }

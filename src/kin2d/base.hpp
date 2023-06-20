@@ -22,4 +22,8 @@ namespace kin {
     inline bool nearly_equal(glm::vec2 a, glm::vec2 b, float max = 0.0001f) {
         return glm::abs(a.x - b.x) < max && glm::abs(a.y - b.y) < max;
     }
+
+    inline float sqaure(float value) {
+        return value * value;
+    }
 }

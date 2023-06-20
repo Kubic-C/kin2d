@@ -14,7 +14,6 @@ namespace kin {
     obb_t::obb_t(glm::vec2 pos, float rot, float hw, float hh)
         : transform_t(pos, rot) {
         set_dimensions(hw, hh);
-        update_vertices();
     }
 
     void obb_t::update_vertices() {
@@ -66,4 +65,8 @@ namespace kin {
     const aabb_t& obb_t::get_aabb() const { 
         return aabb; 
     };
+
+    float obb_t::compute_mass(float density) {
+        return hw * hh * density;
+    }
 }
