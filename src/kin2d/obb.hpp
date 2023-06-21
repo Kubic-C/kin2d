@@ -25,7 +25,7 @@ namespace kin {
 
         virtual void update_vertices();
         void set_dimensions(float hw, float hh);
-        const aabb_t& get_aabb() const;;
+        const aabb_t& get_aabb() const override;
         float compute_mass(float density);
 
     public: 

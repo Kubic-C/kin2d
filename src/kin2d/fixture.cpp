@@ -3,15 +3,15 @@
 
 namespace kin {
     fixture_t::fixture_t(rigid_body_t* body, const fixture_def_t& def) 
-        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction), magic_number(FIXTURE_MAGIC) {
+        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction) { 
         body->fixtures.push_front(this);
 
-        set_density(def.density, true);
+        set_density(def.density, false);
+
+        update_vertices();
     } 
 
     fixture_t::~fixture_t() {
-        assert(magic_number == FIXTURE_MAGIC);
-
         body->remove_mass(pos, mass, tensor);
         body->fixtures.remove_element(this);
     }
@@ -35,7 +35,7 @@ namespace kin {
     }
 
     glm::vec2 fixture_t::get_world_pos() const {
-        return body->get_world_pos() + pos;
+        return body->get_world_pos() + glm::rotate(pos, body->rot);
     }
 
     float fixture_t::get_world_rot() const {
@@ -43,8 +43,6 @@ namespace kin {
     }
     
     void fixture_t::update_vertices() {
-        assert(magic_number == FIXTURE_MAGIC);
-
         box_vertices_t local_vertices = {
             glm::vec2(-hw, -hh),
             glm::vec2( hw, -hh),

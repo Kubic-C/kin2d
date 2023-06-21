@@ -16,10 +16,6 @@ namespace kin {
         // create a rigid body
         rigid_body_t* create_rigid_body(glm::vec2 pos, float rot, body_type_t type);
 
-        // insure each body is unique and there is not two bodies of the same kind in the doubly linked list
-        // note: extremely expensive, should be used for debug only
-        void verify_unique_bodies();
-
         // destroy a rigid body
         void destroy_rigid_body(rigid_body_t* body);
 
@@ -35,7 +31,13 @@ namespace kin {
         // get the quad tree of world
         quad_tree_t& quad_tree() { return root; };
 
+        // get the last body created
+        // for debug purposes
+        rigid_body_t* last_body() { return dynamic_cast<rigid_body_t*>(bodies.last); }
+
     private:
+        void solve_collisions();
+
         ptm::doubly_linked_list_header_t<rigid_body_t> bodies;
 
         ptm::object_pool_t<rigid_body_t> body_pool;
@@ -45,6 +47,6 @@ namespace kin {
         float     root_hw  = 1000.0f;
 
         quad_tree_t root;
-        glm::vec2 gravity;
+        glm::vec2 gravity = {ptm::blatent_f, ptm::blatent_f};
     };
 }

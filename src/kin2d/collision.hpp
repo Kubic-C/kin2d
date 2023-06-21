@@ -34,4 +34,8 @@ namespace kin {
 
     // resolve bodies linear and angular velocity using the impulse method
     void impulse_method(rigid_body_t& body1, rigid_body_t& body2, collision_manifold_t& manifold);
+
+    // resolve bodies using the average of two contact points
+    // note: experimental
+    void impulse_method_AVG(rigid_body_t& body1, rigid_body_t& body2, collision_manifold_t& manifold);
 }

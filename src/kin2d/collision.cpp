@@ -151,9 +151,19 @@ namespace kin {
             return false;
 
         const glm::vec2 amount = manifold.normal * manifold.depth;
-        const float invtotal_mass = 1.0f / (body1.mass + body2.mass); 
-        const glm::vec2 amount1 = amount * (body1.mass * invtotal_mass);
-        const glm::vec2 amount2 = amount * (body2.mass * invtotal_mass);
+        glm::vec2 amount1;
+        glm::vec2 amount2;
+
+        if(body1.is_static())  {
+            amount1 = {0.0f, 0.0f};
+            amount2 = amount;
+        } else if(body2.is_static()) {
+            amount2 = {0.0f, 0.0f};
+            amount1 = amount;
+        } else {
+            amount1 = amount / 2.0f;
+            amount2 = amount1;
+        }
 
         body1.pos -= amount1;
         body2.pos += amount2;   
@@ -186,8 +196,8 @@ namespace kin {
         std::array<impulse_t, 2> impulses;
         
         for(uint32_t i = 0; i < manifold.count; i++) {
-            impulses[i].r1 = body1.pos - manifold.points[i];
-            impulses[i].r2 = body2.pos - manifold.points[i];
+            impulses[i].r1 = (body1.pos + body1.rot_center_of_mass) - manifold.points[i];
+            impulses[i].r2 = (body2.pos + body2.rot_center_of_mass) - manifold.points[i];
 
             glm::vec2 r1_perp = {impulses[i].r1.y, -impulses[i].r1.x};
             glm::vec2 r2_perp = {impulses[i].r2.y, -impulses[i].r2.x};
@@ -196,7 +206,8 @@ namespace kin {
             glm::vec2 angular_linear2 = r2_perp * body2.angular_vel;
 
             glm::vec2 rel_vel = 
-                (body2.linear_vel + angular_linear2) - (body1.linear_vel + angular_linear1);
+                (body2.linear_vel + angular_linear2) - 
+                (body1.linear_vel + angular_linear1);
 
             float rel_vel_dot_n = glm::dot(rel_vel, manifold.normal);
             if(rel_vel_dot_n > 0.0f)
@@ -207,26 +218,21 @@ namespace kin {
 
             float denom = 
                 body1.invmass + body2.invmass + 
-                (sqaure(r1_perp_dot_n) * body1.invintertia) + 
-                (sqaure(r2_perp_dot_n) * body2.invintertia);
-
-            impulses[i].j = -(1 + manifold.restitution) * rel_vel_dot_n;
+                (sqaure(r1_perp_dot_n) * body1.invinertia) + 
+                (sqaure(r2_perp_dot_n) * body2.invinertia);
+            
+            impulses[i].j = -(1.0f + manifold.restitution) * rel_vel_dot_n;
             impulses[i].j /= denom;
-            impulses[i].j /= manifold.count;
+            impulses[i].j /= (float)manifold.count;
         }
 
         for(uint32_t i = 0; i < manifold.count; i++) {
             glm::vec2 impulse = impulses[i].j * manifold.normal;
 
-            // if(impulses[i].j >= 300.0f) {
-            //     printf("impulse[i].j: %f\n", impulses[i].j);
-            // }
-
-            body1.linear_vel -= impulse * body1.invmass;
-            body1.angular_vel -= cross(impulse, impulses[i].r1) * body1.invintertia;
-
-            body2.linear_vel += impulse * body2.invmass;
-            body2.angular_vel += cross(impulse, impulses[i].r2) * body2.invintertia;
+            body1.linear_vel  -= impulse * body1.invmass;
+            body1.angular_vel -= cross(impulse, impulses[i].r1) * body1.invinertia;
+            body2.linear_vel  += impulse * body2.invmass;
+            body2.angular_vel += cross(impulse, impulses[i].r2) * body2.invinertia;
         }
 
         // friction calculations
@@ -252,8 +258,8 @@ namespace kin {
 
             float denom = 
                 body1.invmass + body2.invmass + 
-               (sqaure(r1_perp_dot_t) * body1.invintertia) + 
-               (sqaure(r2_perp_dot_t) * body2.invintertia);
+               (sqaure(r1_perp_dot_t) * body1.invinertia) + 
+               (sqaure(r2_perp_dot_t) * body2.invinertia);
 
             float jt = -glm::dot(rel_vel, tangent);
             jt /= denom;
@@ -268,10 +274,100 @@ namespace kin {
 
         for(uint32_t i = 0; i < manifold.count; i++) {
             body1.linear_vel -= impulses[i].friction_impulse * body1.invmass;
-            body1.angular_vel -= cross(impulses[i].friction_impulse, impulses[i].r1) * body1.invintertia;
+            body1.angular_vel -= cross(impulses[i].friction_impulse, impulses[i].r1) * body1.invinertia;
 
             body2.linear_vel += impulses[i].friction_impulse * body2.invmass;
-            body2.angular_vel += cross(impulses[i].friction_impulse, impulses[i].r2) * body2.invintertia;
+            body2.angular_vel += cross(impulses[i].friction_impulse, impulses[i].r2) * body2.invinertia;
+        }
+    }
+
+    void impulse_method_AVG(rigid_body_t& body1, rigid_body_t& body2, collision_manifold_t& manifold) {
+        impulse_t impulse;
+        glm::vec2 average = manifold.points[0];
+
+        if(manifold.count == 2) {
+            average += manifold.points[1];
+            average /= 2.0f;
+        }
+
+        { // normal calculations
+            impulse.r1 = (body1.pos + body1.rot_center_of_mass) - average;
+            impulse.r2 = (body2.pos + body2.rot_center_of_mass) - average;
+
+            glm::vec2 r1_perp = {impulse.r1.y, -impulse.r1.x};
+            glm::vec2 r2_perp = {impulse.r2.y, -impulse.r2.x};
+
+            glm::vec2 angular_linear1 = r1_perp * body1.angular_vel;
+            glm::vec2 angular_linear2 = r2_perp * body2.angular_vel;
+
+            glm::vec2 rel_vel = 
+                (body2.linear_vel + angular_linear2) - 
+                (body1.linear_vel + angular_linear1);
+
+            float rel_vel_dot_n = glm::dot(rel_vel, manifold.normal);
+            if(rel_vel_dot_n > 0.0f)
+                return;
+
+            float r1_perp_dot_n = glm::dot(r1_perp, manifold.normal);
+            float r2_perp_dot_n = glm::dot(r2_perp, manifold.normal);
+
+            float denom = 
+                body1.invmass + body2.invmass + 
+                (sqaure(r1_perp_dot_n) * body1.invinertia) + 
+                (sqaure(r2_perp_dot_n) * body2.invinertia);
+            
+            impulse.j = -(1.0f + manifold.restitution) * rel_vel_dot_n;
+            impulse.j /= denom;
+            impulse.j /= (float)manifold.count;
+
+            // apply impulse
+            glm::vec2 impulsej = impulse.j * manifold.normal;
+
+            body1.linear_vel  -= impulsej * body1.invmass;
+            body1.angular_vel -= cross(impulsej, impulse.r1) * body1.invinertia;
+            body2.linear_vel  += impulsej * body2.invmass;
+            body2.angular_vel += cross(impulsej, impulse.r2) * body2.invinertia;
+        }
+
+        { // tangent calculations
+            glm::vec2 r1_perp = {impulse.r1.y, -impulse.r1.x};
+            glm::vec2 r2_perp = {impulse.r2.y, -impulse.r2.x};
+
+            glm::vec2 angular_linear1 = r1_perp * body1.angular_vel;
+            glm::vec2 angular_linear2 = r2_perp * body2.angular_vel;
+
+            glm::vec2 rel_vel = 
+                (body2.linear_vel + angular_linear2) - (body1.linear_vel + angular_linear1);
+
+            glm::vec2 tangent = rel_vel - glm::dot(rel_vel, manifold.normal) * manifold.normal;
+            if(nearly_equal(tangent, {0.0f, 0.0f}))
+                return;
+            else
+                tangent = glm::normalize(tangent);
+
+            float r1_perp_dot_t = glm::dot(r1_perp, tangent);
+            float r2_perp_dot_t = glm::dot(r2_perp, tangent);
+
+            float denom = 
+                body1.invmass + body2.invmass + 
+               (sqaure(r1_perp_dot_t) * body1.invinertia) + 
+               (sqaure(r2_perp_dot_t) * body2.invinertia);
+
+            float jt = -glm::dot(rel_vel, tangent);
+            jt /= denom;
+            jt /= manifold.count;
+
+            if(glm::abs(jt) <= impulse.j * manifold.static_friction) {
+                impulse.friction_impulse = jt * tangent;
+            } else {
+                impulse.friction_impulse = -impulse.j * tangent * manifold.dynamic_friction;
+            }
+
+            body1.linear_vel -= impulse.friction_impulse * body1.invmass;
+            body1.angular_vel -= cross(impulse.friction_impulse, impulse.r1) * body1.invinertia;
+
+            body2.linear_vel += impulse.friction_impulse * body2.invmass;
+            body2.angular_vel += cross(impulse.friction_impulse, impulse.r2) * body2.invinertia;
         }
     }
 }

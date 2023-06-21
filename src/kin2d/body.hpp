@@ -2,8 +2,6 @@
 
 #include "fixture.hpp"
 
-#define BODY_MAGIC 0xFFBD01F
-
 namespace kin {
     class world_t;
 
@@ -21,8 +19,7 @@ namespace kin {
         friend class fixture_t;
 
         rigid_body_t() { assert(false); }
-        rigid_body_t(world_t* world, glm::vec2 pos, float rot, body_type_t type)
-            : transform_t(pos, rot), world(world), type(type), magic_number(BODY_MAGIC), body_num(++body_count) {}
+        rigid_body_t(world_t* world, glm::vec2 pos, float rot, body_type_t type);
         ~rigid_body_t();
 
         void update(float delta_time);
@@ -37,32 +34,30 @@ namespace kin {
         void       destroy_fixture(fixture_t* fixture);
 
         bool has_fixtures() { return !fixtures.is_empty(); }
+        bool is_static() { return type == body_type_static; }
 
         void iterate_fixtures(fixture_callback_t fixture);
 
     public:
-#ifndef NDEBUG
-        uint32_t body_num;
-        uint32_t magic_number;
-#endif
+        body_type_t type = (body_type_t)ptm::blatent_i32;
 
-        body_type_t type;
-
-        float     intertia      = 0.0f;
-        float     invintertia   = 0.0f;
+        float     inertia      = ptm::blatent_f;
+        float     invinertia   = ptm::blatent_f;
         
-        glm::vec2 center_of_mass = {0.0f, 0.0f};
-        float     mass        = 0.0f;
-        float     invmass     = 0.0f;
+        // the rotated center of mass
+        glm::vec2 rot_center_of_mass = {ptm::blatent_f, ptm::blatent_f};
+        glm::vec2 center_of_mass     = {ptm::blatent_f, ptm::blatent_f};
+        float     mass        = ptm::blatent_f;
+        float     invmass     = ptm::blatent_f;
 
-        float     torque      = 0.0f;
-        float     angular_vel = 0.0f;
+        float     torque      = ptm::blatent_f;
+        float     angular_vel = ptm::blatent_f;
 
-        glm::vec2 linear_vel  = {0.0f, 0.0f};
-        glm::vec2 forces      = {0.0f, 0.0f};
+        glm::vec2 linear_vel  = {ptm::blatent_f, ptm::blatent_f};
+        glm::vec2 forces      = {ptm::blatent_f, ptm::blatent_f};
 
     protected:
-        world_t* world;
+        world_t* world = nullptr;
         ptm::doubly_linked_list_header_t<fixture_t> fixtures;
 
         // the center of mass with no average calculations applied
@@ -71,6 +66,8 @@ namespace kin {
         void add_mass(glm::vec2 rel_center, float mass, float tensor);
         void remove_mass(glm::vec2 rel_center, float mass, float tensor);
 
+        void set_zero();
+        void compute_rot_com();
         void compute_center_of_mass();
         void compute_invmass();
         void compute_invintertia();
