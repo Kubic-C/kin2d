@@ -29,24 +29,36 @@ namespace kin {
         void iterate_bodies(body_callback_t callback);
 
         // get the quad tree of world
-        quad_tree_t& quad_tree() { return root; };
+        qt_root_t& quad_tree() { return root; };
 
         // get the last body created
         // for debug purposes
         rigid_body_t* last_body() { return dynamic_cast<rigid_body_t*>(bodies.last); }
 
+        // the amount of bodies in the world
+        size_t count();
+
+        // Gives user quad tree AABB info for drawing
+        void draw_tree(draw_callback_t draw);
+
+        // print profile
+        void print_profiles(int denom = -1);
     private:
-        void solve_collisions();
+        void solve_collisions_by_linear();
+        void solve_collisions_by_leaf();
+
+        size_t body_count = 0;
+
+        profiler_t profiler;
+        float dt_total          = 0.0f;
+        float clean_every       = 0.25f;
 
         ptm::doubly_linked_list_header_t<rigid_body_t> bodies;
 
-        ptm::object_pool_t<rigid_body_t> body_pool;
-        ptm::object_pool_t<fixture_t>    fixture_pool;
+        ptm::object_pool_t<rigid_body_t> body_pool = {1000};
+        ptm::object_pool_t<fixture_t>    fixture_pool = {1000};
 
-        glm::vec2 root_pos = {0.0f, 0.0f};
-        float     root_hw  = 1000.0f;
-
-        quad_tree_t root;
+        qt_root_t root = {5000};
         glm::vec2 gravity = {ptm::blatent_f, ptm::blatent_f};
     };
 }

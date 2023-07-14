@@ -9,7 +9,8 @@ target_sources(kin2d PRIVATE
     "body.hpp" "body.cpp"
     "world.hpp" "world.cpp"
     "collision.hpp" "collision.cpp"
-    "fixture.hpp" "fixture.cpp")
+    "fixture.hpp" "fixture.cpp"
+    "math.hpp" "math.cpp")
  
 target_sources(kin2d PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}/kin2d.hpp")

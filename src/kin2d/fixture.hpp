@@ -23,7 +23,7 @@ namespace kin {
         virtual glm::vec2 get_local_pos() const override { return pos; }
         virtual glm::vec2 get_world_pos() const override;
         virtual float     get_world_rot() const override;
-        void update_vertices() override;
+        void update_vertices();
 
         float tensor           = ptm::blatent_f;
         float mass             = ptm::blatent_f;
@@ -31,6 +31,7 @@ namespace kin {
         float density          = ptm::blatent_f;
         float static_friction  = ptm::blatent_f;
         float dynamic_friction = ptm::blatent_f;
+        int   qt_id            = ptm::blatent_i32;
 
         rigid_body_t* body;
     };

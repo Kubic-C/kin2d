@@ -1,6 +1,8 @@
 #pragma once
 
 #include "fixture.hpp"
+#include "quad_tree.hpp"
+#include "math.hpp"
 
 namespace kin {
     class world_t;
@@ -24,7 +26,12 @@ namespace kin {
 
         void update(float delta_time);
 
-        glm::vec2 get_world_point(glm::vec2 point);
+        glm::vec2 get_world_point(glm::vec2 point) const override {
+            return fast_rotate_w_precalc(point, psin, pcos) + pos;
+        }
+
+        // You must call this function when setting the rotation of the rigid body
+        void set_rotation(float rot);
 
         void apply_angular_velocity(float velocity);
         void apply_linear_velocity(glm::vec2 velocity);
@@ -57,6 +64,8 @@ namespace kin {
         glm::vec2 forces      = {ptm::blatent_f, ptm::blatent_f};
 
     protected:
+        float psin = ptm::blatent_f, pcos = ptm::blatent_f; // precalculated sin and cos
+
         world_t* world = nullptr;
         ptm::doubly_linked_list_header_t<fixture_t> fixtures;
 
@@ -67,6 +76,7 @@ namespace kin {
         void remove_mass(glm::vec2 rel_center, float mass, float tensor);
 
         void set_zero();
+        void compute_sincos();
         void compute_rot_com();
         void compute_center_of_mass();
         void compute_invmass();

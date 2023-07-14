@@ -29,6 +29,8 @@ namespace kin {
         linear_vel  = {0.0f, 0.0f};
         forces      = {0.0f, 0.0f};
         rot_center_of_mass = {0.0f, 0.0f};
+
+        compute_sincos();
     }
 
     void rigid_body_t::update(float delta_time) {
@@ -53,9 +55,16 @@ namespace kin {
 
             rot += angular_vel * delta_time;
             torque = 0.0f;
-    
+
+            compute_sincos();
             compute_rot_com();
         }
+    }
+
+    void rigid_body_t::set_rotation(float rot) {
+        this->rot = rot;
+        compute_sincos();
+        compute_rot_com();
     }
 
     void rigid_body_t::apply_angular_velocity(float velocity) {
@@ -78,10 +87,13 @@ namespace kin {
     fixture_t* rigid_body_t::create_fixture(const fixture_def_t& def) {
         fixture_t* new_fixture = world->fixture_pool.create(1, this, def);
 
+        world->root.insert(new_fixture);
+
         return new_fixture;
     }
 
     void rigid_body_t::destroy_fixture(fixture_t* fixture) {
+        world->root.remove(fixture);
         world->fixture_pool.destroy(fixture, 1);
     }
 
@@ -121,8 +133,13 @@ namespace kin {
         compute_rot_com();
     }
 
+    void rigid_body_t::compute_sincos() {
+        psin = fast_sin(rot);
+        pcos = fast_cos(rot);
+    }
+
     void rigid_body_t::compute_rot_com() {
-        rot_center_of_mass = glm::rotate(center_of_mass, rot);
+        rot_center_of_mass = fast_rotate_w_precalc(center_of_mass, psin, pcos);
     }
 
     void rigid_body_t::compute_center_of_mass() {

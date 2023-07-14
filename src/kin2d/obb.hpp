@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aabb.hpp"
-#include "quad_tree.hpp"
 
 namespace kin {
     struct transform_t {
@@ -10,7 +9,7 @@ namespace kin {
 
         virtual ~transform_t() = default;
 
-        glm::vec2 get_world_point(glm::vec2 point);
+        virtual glm::vec2 get_world_point(glm::vec2 point) const;
         virtual glm::vec2 get_world_pos() const { return pos; }
         virtual glm::vec2 get_local_pos() const { return pos; }
         virtual float     get_world_rot() const { return rot; }
@@ -19,13 +18,12 @@ namespace kin {
         float     rot;
     };
 
-    struct obb_t : public transform_t, public quad_tree_element_t {
+
+    struct obb_t : transform_t {
     public:
         obb_t(glm::vec2 pos, float rot, float hw, float hh);
 
-        virtual void update_vertices();
         void set_dimensions(float hw, float hh);
-        const aabb_t& get_aabb() const override;
         float compute_mass(float density);
 
     public: 
