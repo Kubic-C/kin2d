@@ -58,7 +58,6 @@ namespace kin {
         float     invinertia   = ptm::blatent_f;
         
         // the rotated center of mass
-        glm::vec2 rot_center_of_mass = {ptm::blatent_f, ptm::blatent_f};
         glm::vec2 center_of_mass     = {ptm::blatent_f, ptm::blatent_f};
         float     mass        = ptm::blatent_f;
         float     invmass     = ptm::blatent_f;
@@ -83,7 +82,6 @@ namespace kin {
 
         void set_zero();
         void compute_sincos();
-        void compute_rot_com();
         void compute_center_of_mass();
         void compute_invmass();
         void compute_invintertia();

@@ -28,7 +28,6 @@ namespace kin {
 
         linear_vel  = {0.0f, 0.0f};
         forces      = {0.0f, 0.0f};
-        rot_center_of_mass = {0.0f, 0.0f};
 
         compute_sincos();
     }
@@ -57,14 +56,12 @@ namespace kin {
             torque = 0.0f;
 
             compute_sincos();
-            compute_rot_com();
         }
     }
 
     void rigid_body_t::set_rotation(float rot) {
         this->rot = rot;
         compute_sincos();
-        compute_rot_com();
     }
 
     void rigid_body_t::apply_angular_velocity(float velocity) {
@@ -119,7 +116,6 @@ namespace kin {
         inertia += add_tensor;
         compute_invintertia();
         compute_center_of_mass();
-        compute_rot_com();
     }
 
     void rigid_body_t::remove_mass(glm::vec2 rel_center, float rem_mass, float rem_tensor) {
@@ -130,16 +126,11 @@ namespace kin {
         inertia -= rem_tensor;
         compute_invintertia();
         compute_center_of_mass();
-        compute_rot_com();
     }
 
     void rigid_body_t::compute_sincos() {
         psin = fast_sin(rot);
         pcos = fast_cos(rot);
-    }
-
-    void rigid_body_t::compute_rot_com() {
-        rot_center_of_mass = fast_rotate_w_precalc(center_of_mass, psin, pcos);
     }
 
     void rigid_body_t::compute_center_of_mass() {

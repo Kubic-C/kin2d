@@ -226,8 +226,8 @@ namespace kin {
         }
 
         { // normal calculations
-            impulse.r1 = (body1.pos + body1.rot_center_of_mass) - average;
-            impulse.r2 = (body2.pos + body2.rot_center_of_mass) - average;
+            impulse.r1 = body1.get_world_pos() - average;
+            impulse.r2 = body2.get_world_pos() - average;
 
             glm::vec2 r1_perp = {impulse.r1.y, -impulse.r1.x};
             glm::vec2 r2_perp = {impulse.r2.y, -impulse.r2.x};
