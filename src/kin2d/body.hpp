@@ -26,8 +26,14 @@ namespace kin {
 
         void update(float delta_time);
 
+        glm::vec2 get_world_pos() const override {
+            return pos + center_of_mass;
+        }
+
         glm::vec2 get_world_point(glm::vec2 point) const override {
-            return fast_rotate_w_precalc(point, psin, pcos) + pos;
+            glm::vec2 rot_point = fast_rotate_w_precalc(point - center_of_mass, psin, pcos);
+
+            return (rot_point + center_of_mass) + pos;
         }
 
         // You must call this function when setting the rotation of the rigid body

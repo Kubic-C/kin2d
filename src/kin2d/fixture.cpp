@@ -62,7 +62,7 @@ namespace kin {
 
         for(int i = 0; i < 4; i++) {
             // the shape should be rotated by its relative position and the bodies center of mass
-            world_vertices[i] = body->get_world_point(local_vertices[i] + (pos - body->center_of_mass));
+            world_vertices[i] = body->get_world_point(local_vertices[i] + pos);
 
             if(world_vertices[i].x < bl.x) {
                 bl.x = world_vertices[i].x;
