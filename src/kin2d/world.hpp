@@ -43,6 +43,10 @@ namespace kin {
 
         // print profile
         void print_profiles(int denom = -1);
+
+        // set gravity
+        void set_gravity(glm::vec2 gravity);
+
     private:
         void solve_collisions_by_linear();
         void solve_collisions_by_leaf();

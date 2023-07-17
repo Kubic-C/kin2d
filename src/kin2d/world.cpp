@@ -123,4 +123,8 @@ namespace kin {
     void world_t::draw_tree(draw_callback_t draw) {
         root.draw_tree(draw);
     }
+
+    void world_t::set_gravity(glm::vec2 gravity) {
+        this->gravity = gravity;
+    }
 }
