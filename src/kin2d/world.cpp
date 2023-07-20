@@ -84,7 +84,6 @@ namespace kin {
 
                 body->iterate_fixtures([&](fixture_t* fixture){
                     // Reinserting into quad tree
-                    // root.remove(*fixture->relement);
                     // update_vertices() changes the AABB
                     // so we must call it after removing the old AABB
                     // from the tree

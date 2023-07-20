@@ -60,6 +60,7 @@ namespace kin {
 
         relement->min[0] = float_max;
         relement->min[1] = float_max;
+        
         relement->max[0] = float_min;
         relement->max[1] = float_min;
 
