@@ -18,7 +18,6 @@ namespace kin {
         float     rot;
     };
 
-
     struct obb_t : transform_t {
     public:
         obb_t(glm::vec2 pos, float rot, float hw, float hh);
@@ -32,6 +31,13 @@ namespace kin {
 
         box_vertices_t world_vertices;
         box_normals_t normals;
-        aabb_t aabb;
+    };
+
+    struct rtree_element_t : aabb_t {
+        obb_t* obb;
+
+        bool operator==(const rtree_element_t& other) {
+            return obb = other.obb;
+        }
     };
 }

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <chrono>
+#include <RTRee.h>
 
 namespace kin {
     inline auto start = std::chrono::high_resolution_clock::now();

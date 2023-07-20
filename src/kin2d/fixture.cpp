@@ -3,12 +3,13 @@
 #include "math.hpp"
 
 namespace kin {
-    fixture_t::fixture_t(rigid_body_t* body, const fixture_def_t& def) 
-        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction) { 
+    fixture_t::fixture_t(rigid_body_t* body, rtree_element_t* element, const fixture_def_t& def) 
+        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction), relement(element) { 
         body->fixtures.push_front(this);
 
         set_density(def.density, false);
 
+        relement->obb = this;
         update_vertices();
     } 
 
@@ -57,29 +58,27 @@ namespace kin {
         normals[0] = fast_rotate_w_precalc(glm::vec2(-1.0f, 0.0f ), body->psin, body->pcos);
         normals[1] = fast_rotate_w_precalc(glm::vec2( 0.0f, -1.0f), body->psin, body->pcos);
 
-        glm::vec2 bl = {float_max, float_max};
-        glm::vec2 tr = {float_min, float_min};
+        relement->min[0] = float_max;
+        relement->min[1] = float_max;
+        relement->max[0] = float_min;
+        relement->max[1] = float_min;
 
         for(int i = 0; i < 4; i++) {
             // the shape should be rotated by its relative position and the bodies center of mass
             world_vertices[i] = body->get_world_point(local_vertices[i] + pos);
 
-            if(world_vertices[i].x < bl.x) {
-                bl.x = world_vertices[i].x;
+            if(world_vertices[i].x < relement->min[0]) {
+                relement->min[0] = world_vertices[i].x;
             }
-            if(world_vertices[i].x >  tr.x) {
-                tr.x = world_vertices[i].x;
+            if(world_vertices[i].x >  relement->max[0]) {
+                relement->max[0] = world_vertices[i].x;
             }
-            if(world_vertices[i].y < bl.y) {
-                bl.y = world_vertices[i].y;
+            if(world_vertices[i].y < relement->min[1]) {
+                relement->min[1] = world_vertices[i].y;
             }
-            if(world_vertices[i].y > tr.y) {
-                tr.y = world_vertices[i].y;
+            if(world_vertices[i].y > relement->max[1]) {
+                relement->max[1] = world_vertices[i].y;
             }
         }
-
-        aabb.pos = (bl + tr) * 0.5f;
-        aabb.hw  = (tr.x - bl.x) * 0.5f;
-        aabb.hh  = (tr.y - bl.y) * 0.5f;
     }
 }

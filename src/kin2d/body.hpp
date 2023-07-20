@@ -1,7 +1,6 @@
 #pragma once
 
 #include "fixture.hpp"
-#include "quad_tree.hpp"
 #include "math.hpp"
 
 namespace kin {

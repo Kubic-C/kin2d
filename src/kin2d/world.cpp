@@ -39,34 +39,32 @@ namespace kin {
         body_pool.destroy(body, 1);
     }
 
-    void world_t::set_tree_dimensions(glm::vec2 pos, float hw) {
-        root.root_aabb = {pos, hw, hw};
-    }
-
     void world_t::solve_collisions_by_linear() {
         iterate_bodies([&](kin::rigid_body_t* body) {
             if(!body->has_fixtures())
                 return;
 
             body->iterate_fixtures([&](fixture_t* fixture1){ 
-                root.search(fixture1->aabb, [&](fixture_t* fixture2) {
-                    bool traversed = root.elts[fixture2->qt_id].traversed;
 
-                    if(traversed)
-                        return;
-                    if(fixture1->body == fixture2->body)
-                        return;
-                    if(fixture1->body->is_static() && fixture2->body->is_static()) {
-                        return;
+                std::vector<rtree_element_t> results;
+                root.query(spatial::intersects<2>(fixture1->relement->min, fixture1->relement->max), std::back_inserter(results));
+
+                for(auto relement : results) {
+                    fixture_t& fixture2 = *(fixture_t*)relement.obb;
+
+                    if(fixture1->body == fixture2.body) {
+                        continue;
+                    }
+                    if(fixture1->body->is_static() && 
+                       fixture2.body->is_static()) {
+                        continue;
                     }
 
                     collision_manifold_t manifold;
-                    if(solve_collision_if_there(*fixture1, *fixture2, manifold)) {
-                        impulse_method(*fixture1->body, *fixture2->body, manifold);
+                    if(solve_collision_if_there(*fixture1, fixture2, manifold)) {
+                        impulse_method(*fixture1->body, *fixture2.body, manifold);
                     }
-                });
-
-                root.elts[fixture1->qt_id].traversed = true;
+                }
             });
         });
     }
@@ -75,6 +73,8 @@ namespace kin {
         float step = delta_time / (float)iterations;
 
         for(uint32_t i = 0; i < iterations; i++) {
+            root.clear();
+
             iterate_bodies([&](kin::rigid_body_t* body){
                 if(!body->has_fixtures())
                     return;
@@ -83,27 +83,17 @@ namespace kin {
                 body->update(step);
 
                 body->iterate_fixtures([&](fixture_t* fixture){
-                    root.elts[fixture->qt_id].traversed = false;
-
-                    if(!body->is_static()) {
-                        // Reinserting into quad tree
-                        root.remove(fixture);
-                        // update_vertices() changes the AABB
-                        // so we must call it after removing the old AABB
-                        // from the tree
-                        fixture->update_vertices(); 
-                        root.insert(fixture);
-                    }
+                    // Reinserting into quad tree
+                    // root.remove(*fixture->relement);
+                    // update_vertices() changes the AABB
+                    // so we must call it after removing the old AABB
+                    // from the tree
+                    fixture->update_vertices(); 
+                    root.insert(*fixture->relement);
                 });
             });
 
             solve_collisions_by_linear();
-        }
-
-        dt_total += delta_time;
-        if(dt_total > clean_every) {
-            root.cleanup();
-            dt_total = 0.0f;
         }
     }
 
@@ -118,10 +108,6 @@ namespace kin {
 
             cur = dynamic_cast<rigid_body_t*>(cur->next);
         }
-    }
-
-    void world_t::draw_tree(draw_callback_t draw) {
-        root.draw_tree(draw);
     }
 
     void world_t::set_gravity(glm::vec2 gravity) {
