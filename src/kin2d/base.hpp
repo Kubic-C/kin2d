@@ -4,9 +4,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <chrono>
-#include <RTRee.h>
+#include <phtree/phtree.h>
 
 namespace kin {
+    using namespace improbable::phtree;
+
     inline auto start = std::chrono::high_resolution_clock::now();
 
     inline std::chrono::high_resolution_clock::time_point now_tp() {

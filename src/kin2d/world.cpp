@@ -45,26 +45,22 @@ namespace kin {
                 return;
 
             body->iterate_fixtures([&](fixture_t* fixture1){ 
-
-                std::vector<rtree_element_t> results;
-                root.query(spatial::intersects<2>(fixture1->relement->min, fixture1->relement->max), std::back_inserter(results));
-
-                for(auto relement : results) {
-                    fixture_t& fixture2 = *(fixture_t*)relement.obb;
+                root.for_each([&](const PhBoxF<2>& box, fixture_t* fixture){
+                    fixture_t& fixture2 = *(fixture_t*)fixture;
 
                     if(fixture1->body == fixture2.body) {
-                        continue;
+                        return;
                     }
                     if(fixture1->body->is_static() && 
                        fixture2.body->is_static()) {
-                        continue;
+                        return;
                     }
 
                     collision_manifold_t manifold;
                     if(solve_collision_if_there(*fixture1, fixture2, manifold)) {
                         impulse_method(*fixture1->body, *fixture2.body, manifold);
-                    }
-                }
+                    } 
+                }, FilterNoOp());
             });
         });
     }
@@ -73,7 +69,7 @@ namespace kin {
         float step = delta_time / (float)iterations;
 
         for(uint32_t i = 0; i < iterations; i++) {
-            root.clear();
+            // root.clear();
 
             iterate_bodies([&](kin::rigid_body_t* body){
                 if(!body->has_fixtures())
@@ -87,8 +83,9 @@ namespace kin {
                     // update_vertices() changes the AABB
                     // so we must call it after removing the old AABB
                     // from the tree
-                    fixture->update_vertices(); 
-                    root.insert(*fixture->relement);
+                    auto old = fixture->update_vertices(); 
+                
+                    root.relocate(old, fixture->aabb.key());
                 });
             });
 

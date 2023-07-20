@@ -167,7 +167,7 @@ namespace kin {
         rigid_body_t& body1 = *fix1.body;
         rigid_body_t& body2 = *fix2.body;
 
-        if(!aabb_collide(*fix1.relement, *fix2.relement))
+        if(!aabb_collide(fix1.aabb, fix2.aabb))
             return false;
         
         if(!sat_test(fix1, fix2, manifold))

@@ -32,12 +32,4 @@ namespace kin {
         box_vertices_t world_vertices;
         box_normals_t normals;
     };
-
-    struct rtree_element_t : aabb_t {
-        obb_t* obb;
-
-        bool operator==(const rtree_element_t& other) {
-            return obb = other.obb;
-        }
-    };
 }

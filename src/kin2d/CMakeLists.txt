@@ -1,6 +1,6 @@
 add_library(kin2d STATIC "base.hpp" "base.cpp")
 
-target_link_libraries(kin2d PUBLIC portem glm THST)
+target_link_libraries(kin2d PUBLIC portem glm phtree)
 
 target_sources(kin2d PRIVATE
     "aabb.hpp" "aabb.cpp"
