@@ -15,7 +15,7 @@ namespace kin {
     };
 
     struct fixture_t : obb_t, ptm::doubly_linked_list_element_t {
-        fixture_t(rigid_body_t* body, const fixture_def_t& def);
+        fixture_t(rigid_body_t* body, rtree_element_t* element, const fixture_def_t& def);
         ~fixture_t();
 
         // del_mass_from_body is for internal use only, do not override
@@ -23,7 +23,7 @@ namespace kin {
         virtual glm::vec2 get_local_pos() const override { return pos; }
         virtual glm::vec2 get_world_pos() const override;
         virtual float     get_world_rot() const override;
-        PhBoxF<2> update_vertices();
+        void update_vertices();
 
         float tensor           = ptm::blatent_f;
         float mass             = ptm::blatent_f;
@@ -34,6 +34,6 @@ namespace kin {
         int   qt_id            = ptm::blatent_i32;
 
         rigid_body_t* body;
-        aabb_t aabb;
+        rtree_element_t* relement;
     };
 }

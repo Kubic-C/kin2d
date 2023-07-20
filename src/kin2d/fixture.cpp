@@ -3,12 +3,13 @@
 #include "math.hpp"
 
 namespace kin {
-    fixture_t::fixture_t(rigid_body_t* body, const fixture_def_t& def) 
-        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction) { 
+    fixture_t::fixture_t(rigid_body_t* body, rtree_element_t* element, const fixture_def_t& def) 
+        : body(body), restitution(def.restitution), obb_t(def.rel_pos, 0.0f, def.hw, def.hh), static_friction(def.static_friction), dynamic_friction(def.dynamic_friction), relement(element) { 
         body->fixtures.push_front(this);
 
         set_density(def.density, false);
 
+        relement->obb = this;
         update_vertices();
     } 
 
@@ -46,9 +47,7 @@ namespace kin {
         return body->get_world_rot();
     }
     
-    PhBoxF<2> fixture_t::update_vertices() {
-        PhBoxF<2> old = aabb.key();
-
+    void fixture_t::update_vertices() {
         box_vertices_t local_vertices = {
             glm::vec2(-hw, -hh),
             glm::vec2( hw, -hh),
@@ -59,29 +58,28 @@ namespace kin {
         normals[0] = fast_rotate_w_precalc(glm::vec2(-1.0f, 0.0f ), body->psin, body->pcos);
         normals[1] = fast_rotate_w_precalc(glm::vec2( 0.0f, -1.0f), body->psin, body->pcos);
 
-        aabb.min[0] = float_max;
-        aabb.min[1] = float_max;
-        aabb.max[0] = float_min;
-        aabb.max[1] = float_min;
+        relement->min[0] = float_max;
+        relement->min[1] = float_max;
+        
+        relement->max[0] = float_min;
+        relement->max[1] = float_min;
 
         for(int i = 0; i < 4; i++) {
             // the shape should be rotated by its relative position and the bodies center of mass
             world_vertices[i] = body->get_world_point(local_vertices[i] + pos);
 
-            if(world_vertices[i].x < aabb.min[0]) {
-                aabb.min[0] = world_vertices[i].x;
+            if(world_vertices[i].x < relement->min[0]) {
+                relement->min[0] = world_vertices[i].x;
             }
-            if(world_vertices[i].x >  aabb.max[0]) {
-                aabb.max[0] = world_vertices[i].x;
+            if(world_vertices[i].x >  relement->max[0]) {
+                relement->max[0] = world_vertices[i].x;
             }
-            if(world_vertices[i].y < aabb.min[1]) {
-                aabb.min[1] = world_vertices[i].y;
+            if(world_vertices[i].y < relement->min[1]) {
+                relement->min[1] = world_vertices[i].y;
             }
-            if(world_vertices[i].y > aabb.max[1]) {
-                aabb.max[1] = world_vertices[i].y;
+            if(world_vertices[i].y > relement->max[1]) {
+                relement->max[1] = world_vertices[i].y;
             }
         }
-
-        return old;
     }
 }

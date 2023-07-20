@@ -82,15 +82,17 @@ namespace kin {
     }
 
     fixture_t* rigid_body_t::create_fixture(const fixture_def_t& def) {
-        fixture_t* new_fixture = world->fixture_pool.create(1, this, def);
+        rtree_element_t* relement = world->relement_pool.create(1);
+        fixture_t* new_fixture = world->fixture_pool.create(1, this, relement, def);
 
-        world->root.insert(new_fixture->aabb.key(), new_fixture);
+        world->root.insert(*relement);
 
         return new_fixture;
     }
 
     void rigid_body_t::destroy_fixture(fixture_t* fixture) {
-        world->root.erase(fixture->aabb.key());
+        world->root.remove(*fixture->relement);
+        world->relement_pool.destroy(fixture->relement, 1);
         world->fixture_pool.destroy(fixture, 1);
     }
 

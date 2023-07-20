@@ -1,4 +1,4 @@
 
 add_subdirectory(portem)
 add_subdirectory(glm)
-add_subdirectory(phtree-cpp)
+add_subdirectory(THST)

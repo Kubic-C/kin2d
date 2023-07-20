@@ -4,12 +4,8 @@
 
 namespace kin {
     struct aabb_t {
-        std::array<float, 2> min;
-        std::array<float, 2> max;
-
-        PhBoxF<2> key() {
-            return PhBoxF<2>(min, max);
-        }
+        float min[2];
+        float max[2];
     };
 
     // doess aabb1 collide with aabb2

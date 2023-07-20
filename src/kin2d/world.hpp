@@ -38,7 +38,7 @@ namespace kin {
         // set gravity
         void set_gravity(glm::vec2 gravity);
 
-        PhTreeBoxF<2, fixture_t*> root;
+        spatial::RTree<float, rtree_element_t, 2> root;
     private:
         void solve_collisions_by_linear();
         void solve_collisions_by_leaf();
@@ -52,6 +52,7 @@ namespace kin {
         ptm::doubly_linked_list_header_t<rigid_body_t> bodies;
 
         ptm::object_pool_t<rigid_body_t> body_pool = {1000};
+        ptm::object_pool_t<rtree_element_t> relement_pool = {1000};
         ptm::object_pool_t<fixture_t>    fixture_pool = {1000};
 
         glm::vec2 gravity = {ptm::blatent_f, ptm::blatent_f};
