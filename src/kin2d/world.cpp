@@ -45,9 +45,10 @@ namespace kin {
                 return;
 
             body->iterate_fixtures([&](fixture_t* fixture1){ 
+                rtree_element_t& relement = relement_pool[fixture1->relement_id];
 
                 std::vector<rtree_element_t> results;
-                root.query(spatial::intersects<2>(fixture1->relement->min, fixture1->relement->max), std::back_inserter(results));
+                root.query(spatial::intersects<2>(relement.min, relement.max), std::back_inserter(results));
 
                 for(auto relement : results) {
                     fixture_t& fixture2 = *(fixture_t*)relement.obb;
@@ -88,7 +89,7 @@ namespace kin {
                     // so we must call it after removing the old AABB
                     // from the tree
                     fixture->update_vertices(); 
-                    root.insert(*fixture->relement);
+                    root.insert(relement_pool[fixture->relement_id]);
                 });
             });
 

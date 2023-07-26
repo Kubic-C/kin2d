@@ -163,50 +163,7 @@ namespace kin {
 
     // solves a collision between two fixtures if they are intersecting, returns found
     // results to collision manifold. Does NOT solve impulses
-    inline bool solve_collision_if_there(fixture_t& fix1, fixture_t& fix2, collision_manifold_t& manifold) {
-        rigid_body_t& body1 = *fix1.body;
-        rigid_body_t& body2 = *fix2.body;
-
-        if(!aabb_collide(*fix1.relement, *fix2.relement))
-            return false;
-        
-        if(!sat_test(fix1, fix2, manifold))
-            return false;
-
-        const glm::vec2 amount = manifold.normal * manifold.depth;
-        glm::vec2 amount1;
-        glm::vec2 amount2;
-
-        if(body1.is_static())  {
-            amount1 = {0.0f, 0.0f};
-            amount2 = amount;
-        } else if(body2.is_static()) {
-            amount2 = {0.0f, 0.0f};
-            amount1 = amount;
-        } else {
-            amount1 = amount / 2.0f;
-            amount2 = amount1;
-        }
-
-        body1.pos -= amount1;
-        body2.pos += amount2;   
-
-        for(auto& point : fix1.world_vertices) {
-            point -= amount1;
-        }
-
-        for(auto& point : fix2.world_vertices) {
-            point += amount2;
-        }
-
-        compute_manifold(fix1, fix2, manifold);
-
-        manifold.restitution = glm::max(fix1.restitution, fix2.restitution);
-        manifold.static_friction = (fix1.static_friction + fix2.static_friction) * 0.5f;
-        manifold.dynamic_friction = (fix1.dynamic_friction + fix2.dynamic_friction) * 0.5f;
-
-        return true;
-    }
+    bool solve_collision_if_there(fixture_t& fix1, fixture_t& fix2, collision_manifold_t& manifold);
     
     struct impulse_t {
         glm::vec2 r1;

@@ -50,6 +50,14 @@ namespace kin {
 
         void iterate_fixtures(fixture_callback_t fixture);
 
+        void set_position(glm::vec2 pos) {
+            this->pos =  center_of_mass + pos;
+        }
+
+        void add_position(glm::vec2 add) {
+            this->pos += add;
+        }
+
     public:
         body_type_t type = (body_type_t)ptm::blatent_i32;
 
@@ -67,10 +75,11 @@ namespace kin {
         glm::vec2 linear_vel  = {ptm::blatent_f, ptm::blatent_f};
         glm::vec2 forces      = {ptm::blatent_f, ptm::blatent_f};
 
+        world_t* world = nullptr;
+
     protected:
         float psin = ptm::blatent_f, pcos = ptm::blatent_f; // precalculated sin and cos
 
-        world_t* world = nullptr;
         ptm::doubly_linked_list_header_t<fixture_t> fixtures;
 
         // the center of mass with no average calculations applied

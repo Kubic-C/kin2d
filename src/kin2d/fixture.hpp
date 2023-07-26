@@ -15,7 +15,7 @@ namespace kin {
     };
 
     struct fixture_t : obb_t, ptm::doubly_linked_list_element_t {
-        fixture_t(rigid_body_t* body, rtree_element_t* element, const fixture_def_t& def);
+        fixture_t(rigid_body_t* body, int relement_id, const fixture_def_t& def);
         ~fixture_t();
 
         // del_mass_from_body is for internal use only, do not override
@@ -34,6 +34,6 @@ namespace kin {
         int   qt_id            = ptm::blatent_i32;
 
         rigid_body_t* body;
-        rtree_element_t* relement;
+        int relement_id;
     };
 }
