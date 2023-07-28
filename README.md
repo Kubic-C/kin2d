@@ -8,5 +8,4 @@ This includes:
 - Tile bodies which are composed of boxes
 - Intuitive physics simulation
 
-While this physic engine is capable of simulating boxes extremely fast, there is a cost.
-Kin2d cannot handle polygons that arent boxes. 
+While this physic engine is capable of simulating boxes extremely fast, it can't handle anything other then rectangles.
