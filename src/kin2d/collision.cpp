@@ -14,33 +14,31 @@ namespace kin {
             return false;
 
         const glm::vec2 amount = (manifold.normal * manifold.depth) * 0.5f;
-        glm::vec2 amount1;
-        glm::vec2 amount2;
 
         if(body1.is_static())  {
-            amount1 = {0.0f, 0.0f};
-            amount2 = amount;
+            body2.pos += amount;   
+        
+            body2.iterate_fixtures([=](fixture_t* fixture){
+                fixture->update_vertices();
+            });
         } else if(body2.is_static()) {
-            amount2 = {0.0f, 0.0f};
-            amount1 = amount;
+            body1.pos -= amount;
+
+            body1.iterate_fixtures([=](fixture_t* fixture){
+                fixture->update_vertices();
+            });
         } else {
-            amount1 = amount;
-            amount2 = amount1;
+            body1.pos -= amount;
+            body2.pos += amount;   
+        
+            body1.iterate_fixtures([=](fixture_t* fixture){
+                fixture->update_vertices();
+            });
+
+            body2.iterate_fixtures([=](fixture_t* fixture){
+                fixture->update_vertices();
+            });
         }
-
-        body1.pos -= amount1;
-        body2.pos += amount2;   
-
-        if(manifold.depth >= 10.0f) {
-            printf("long depth %f\n", manifold.depth);
-        }
-
-        body1.iterate_fixtures([=](fixture_t* fixture){
-            fixture->update_vertices();
-        });
-        body2.iterate_fixtures([=](fixture_t* fixture){
-            fixture->update_vertices();
-        });
 
         compute_manifold(fix1, fix2, manifold);
 
